@@ -13,6 +13,8 @@ task_context "Task" do
 
     subclasses 'iodrivers_base::Task'
 
-    output_port 'ptu_kongsberg_oe10/Angles', 'angles'
+    property 'device_id', 'int'
+
+    output_port 'angles', 'ptu_kongsberg_oe10/Angles'
 end
 

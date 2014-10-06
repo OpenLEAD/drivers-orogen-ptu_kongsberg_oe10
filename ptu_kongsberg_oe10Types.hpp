@@ -11,8 +11,8 @@ namespace ptu_kongsberg_oe10 {
     struct Angles
     {
         base::Time time;
+        base::Angle pan;
         base::Angle tilt;
-        base::Angle roll;
     };
 }
 
