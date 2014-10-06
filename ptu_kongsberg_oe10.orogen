@@ -1,0 +1,18 @@
+name "ptu_kongsberg_oe10"
+
+import_types_from 'base'
+
+using_task_library 'iodrivers_base'
+using_library "ptu_kongsberg_oe10"
+import_types_from "ptu_kongsberg_oe10Types.hpp"
+
+task_context "Task" do
+    # This is the default from now on, and should not be removed. Rock will
+    # transition to a setup where all components use a configuration step.
+    needs_configuration
+
+    subclasses 'iodrivers_base::Task'
+
+    output_port 'ptu_kongsberg_oe10/Angles', 'angles'
+end
+
