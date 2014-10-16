@@ -4,6 +4,9 @@
 #define PTU_KONGSBERG_OE10_TASK_TASK_HPP
 
 #include "ptu_kongsberg_oe10/TaskBase.hpp"
+#include <base/JointLimits.hpp>
+#include <base/samples/Joints.hpp>
+#include <base/commands/Joints.hpp>
 
 namespace ptu_kongsberg_oe10 {
 
@@ -21,12 +24,18 @@ namespace ptu_kongsberg_oe10 {
      \endverbatim
      *  It can be dynamically adapted when the deployment is called with a prefix argument. 
      */
+    struct Driver;
     class Task : public TaskBase
     {
 	friend class TaskBase;
+
     protected:
-
-
+        Driver* m_driver;
+        base::JointLimits m_limits;
+        base::commands::Joints m_cmd;
+        base::samples::Joints m_sample;
+        void writeJoints(base::Time const& time, float pan, float tilt);
+        void init();
 
     public:
         /** TaskContext constructor for Task

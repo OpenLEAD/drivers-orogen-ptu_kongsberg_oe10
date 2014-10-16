@@ -14,7 +14,9 @@ task_context "Task" do
     subclasses 'iodrivers_base::Task'
 
     property 'device_id', 'int'
+    property 'limits', 'base/JointLimits'
 
-    output_port 'angles', 'ptu_kongsberg_oe10/Angles'
+    input_port 'joints_cmd', 'base/samples/Joints'
+    output_port 'joints_samples', 'base/commands/Joints'
 end
 
