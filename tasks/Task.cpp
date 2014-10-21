@@ -69,6 +69,8 @@ void Task::writeJoints(base::Time const& time, float pan, float tilt)
     m_sample[1] = base::JointState::Position(tilt);
     m_sample.time = base::Time::now();
     _joints_samples.write(m_sample);
+    
+    
 }
 
 bool Task::startHook()
