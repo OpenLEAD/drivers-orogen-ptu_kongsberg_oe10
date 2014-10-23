@@ -13,6 +13,12 @@ task_context "Task" do
 
     subclasses 'iodrivers_base::Task'
 
+    operation('setEndStop').
+	arg('mode', '/ptu_kongsberg_oe10/END_STOPS')
+
+    operation('useEndStops').
+        arg('enable', 'bool')
+
     property 'device_id', 'int'
     property 'limits', 'base/JointLimits'
 

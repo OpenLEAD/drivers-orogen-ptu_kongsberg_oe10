@@ -30,6 +30,14 @@ namespace ptu_kongsberg_oe10 {
 	friend class TaskBase;
 
     protected:
+        /* 
+         */
+        virtual void setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode);
+
+        /* 
+         */
+        virtual void useEndStops(bool enable);
+
         Driver* m_driver;
         base::JointLimits m_limits;
         base::commands::Joints m_cmd;

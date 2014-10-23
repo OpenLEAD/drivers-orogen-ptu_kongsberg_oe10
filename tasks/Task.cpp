@@ -21,6 +21,34 @@ Task::~Task()
 {
 }
 
+void Task::setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode)
+{
+    m_driver->readPanTiltStatus(_device_id.get());
+    switch(mode)
+    {
+    case PAN_POSITIVE:
+        m_driver->setPanPositiveEndStop(_device_id.get());
+ 	break;
+    case PAN_NEGATIVE:
+        m_driver->setPanNegativeEndStop(_device_id.get());
+ 	break;
+    case TILT_POSITIVE:
+        m_driver->setTiltPositiveEndStop(_device_id.get());
+ 	break;
+    case TILT_NEGATIVE:
+        m_driver->setTiltNegativeEndStop(_device_id.get());
+ 	break;
+    }
+    m_driver->requestPanTiltStatus(_device_id.get());
+}
+
+void Task::useEndStops(bool enable)
+{
+    m_driver->readPanTiltStatus(_device_id.get());
+    m_driver->useEndStops(_device_id.get(), enable);
+    m_driver->requestPanTiltStatus(_device_id.get());
+}
+
 void Task::init()
 {
     m_sample.resize(2);

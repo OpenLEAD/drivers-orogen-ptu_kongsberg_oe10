@@ -5,14 +5,12 @@
 #include <base/Angle.hpp>
 
 namespace ptu_kongsberg_oe10 {
-    /** This is not the main output for the PTU, but a much nicer way to get the
-     * PTU state than RigidBodyState
-     */
-    struct Angles
+    enum END_STOPS
     {
-        base::Time time;
-        base::Angle pan;
-        base::Angle tilt;
+        PAN_POSITIVE,
+        PAN_NEGATIVE,
+        TILT_POSITIVE,
+        TILT_NEGATIVE
     };
 }
 
