@@ -70,7 +70,14 @@ void Task::writeJoints(base::Time const& time, float pan, float tilt)
     m_sample.time = base::Time::now();
     _joints_samples.write(m_sample);
     
-    
+    base::samples::RigidBodyState ptu_sample;
+    ptu_sample.orientation =
+       Eigen::AngleAxisd(pan, Eigen::Vector3d::UnitZ()) *
+       Eigen::AngleAxisd(tilt, Eigen::Vector3d::UnitY());
+    ptu_sample.sourceFrame = _moving_frame.get();
+    ptu_sample.targetFrame = _base_frame.get();
+    ptu_sample.time = time;
+    _orientation_samples.write(ptu_sample);
 }
 
 bool Task::startHook()

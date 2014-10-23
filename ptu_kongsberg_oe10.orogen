@@ -19,6 +19,8 @@ task_context "Task" do
     input_port 'joints_cmd', 'base/samples/Joints'
     output_port 'joints_samples', 'base/commands/Joints'
     
-    output_port 'ptu_samples', 'base/samples/RigidBodyState'
+    property 'base_frame', '/std/string', 'ptu_kongsberg_base'
+    property 'moving_frame', '/std/string', 'ptu_kongsberg_moving'
+    output_port 'orientation_samples', 'base/samples/RigidBodyState'
 end
 
