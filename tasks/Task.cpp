@@ -88,6 +88,7 @@ bool Task::configureHook()
     // This is not strictly needed, but makes sure the device is indeed there available
     Status status = m_driver->getStatus(_device_id.get());
     writeJoints(base::Time::now(), status.pan, status.tilt);
+    m_driver->useEndStops(_device_id.get(), _use_end_stops.get());
     return true;
 }
 

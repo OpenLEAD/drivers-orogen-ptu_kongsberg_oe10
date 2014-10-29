@@ -22,6 +22,10 @@ task_context "Task" do
     property 'device_id', 'int'
     property 'limits', 'base/JointLimits'
 
+    # Whether the PTU should have end stops enabled when starting
+    # It can be changed later by calling the useEndStops operation
+    property 'use_end_stops', 'bool', false
+
     input_port 'joints_cmd', 'base/samples/Joints'
     output_port 'joints_samples', 'base/commands/Joints'
     
