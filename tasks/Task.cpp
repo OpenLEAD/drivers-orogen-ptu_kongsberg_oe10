@@ -72,9 +72,9 @@ void Task::init()
     // intersection of both tilt and pan rotation axis.
 
     // Transformation from the center of the pan plate to the center of the body.
-    Eigen::Vector3d pan_plate2center(0, 0, 0.2);
+    Eigen::Vector3d pan_plate2center(0, 0, 0.1148);
     // Transformation from the center of the body to the center of the tilt plate
-    Eigen::Vector3d center2tilt_plate(0, 0.4, 0);
+    Eigen::Vector3d center2tilt_plate(0, 0.0858, 0);
     // Rotation to align the tilt frame properly. X is along the zero
     // measurement, Z going out of the plate directed outside the PTU body
     Eigen::AngleAxisd q_center2tilt_plate =
