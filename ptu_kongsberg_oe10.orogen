@@ -32,12 +32,14 @@ task_context "Task" do
     # Frame attached to the pan plate's center. When in zero position, the X
     # axis is within the plate's plane and points towards the zero position as
     # defined by kongsberg (towards the cable side of the PTU). Z is
-    # perpendicular to the plate and directed towards the body.
+    # perpendicular to the plate and directed outside the body to match
+    # Kongsberg angle definitions
     property 'pan_plate_frame', '/std/string', 'ptu_kongsberg_pan'
     # Frame attached to the tilt plate's center. When in zero position, the X
     # axis is within the plate's plane and points towards the zero position as
     # defined by kongsberg (towards the cable side of the PTU). Z is
-    # perpendicular to the plate and directed outside the body.
+    # perpendicular to the plate and directed within the body to match Kongsberg
+    # angle definitions
     property 'tilt_plate_frame', '/std/string', 'ptu_kongsberg_tilt'
     # The transformations from the center of the pan plate to the center of the
     # tilt plate. See the definition of the pan_plate_frame and tilt_plate_frame
