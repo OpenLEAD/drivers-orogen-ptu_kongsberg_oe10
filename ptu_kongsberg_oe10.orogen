@@ -29,8 +29,19 @@ task_context "Task" do
     input_port 'joints_cmd', 'base/samples/Joints'
     output_port 'joints_samples', 'base/commands/Joints'
     
-    property 'base_frame', '/std/string', 'ptu_kongsberg_base'
-    property 'moving_frame', '/std/string', 'ptu_kongsberg_moving'
-    output_port 'orientation_samples', 'base/samples/RigidBodyState'
+    # Frame attached to the pan plate's center. When in zero position, the X
+    # axis is within the plate's plane and points towards the zero position as
+    # defined by kongsberg (towards the cable side of the PTU). Z is
+    # perpendicular to the plate and directed towards the body.
+    property 'pan_plate_frame', '/std/string', 'ptu_kongsberg_pan'
+    # Frame attached to the tilt plate's center. When in zero position, the X
+    # axis is within the plate's plane and points towards the zero position as
+    # defined by kongsberg (towards the cable side of the PTU). Z is
+    # perpendicular to the plate and directed outside the body.
+    property 'tilt_plate_frame', '/std/string', 'ptu_kongsberg_tilt'
+    # The transformations from the center of the pan plate to the center of the
+    # tilt plate. See the definition of the pan_plate_frame and tilt_plate_frame
+    # properties for the frame definitions
+    output_port 'transformation_samples', 'base/samples/RigidBodyState'
 end
 

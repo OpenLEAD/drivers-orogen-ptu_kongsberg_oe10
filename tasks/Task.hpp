@@ -7,6 +7,7 @@
 #include <base/JointLimits.hpp>
 #include <base/samples/Joints.hpp>
 #include <base/commands/Joints.hpp>
+#include <Eigen/Geometry>
 
 namespace ptu_kongsberg_oe10 {
 
@@ -29,6 +30,9 @@ namespace ptu_kongsberg_oe10 {
     {
 	friend class TaskBase;
 
+    public:
+        EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+
     protected:
         /* 
          */
@@ -37,6 +41,8 @@ namespace ptu_kongsberg_oe10 {
         /* 
          */
         virtual void useEndStops(bool enable);
+
+        Eigen::Isometry3d pan_plate2tilt_plate;
 
         Driver* m_driver;
         base::JointLimits m_limits;

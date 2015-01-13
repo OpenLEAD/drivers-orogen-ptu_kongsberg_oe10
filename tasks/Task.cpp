@@ -66,6 +66,25 @@ void Task::init()
     m_limits[1].max.position = 270 * M_PI / 180;
     m_limits[1].max.speed = 0;
     _limits.set(m_limits);
+
+    // Start frame is the pan plate. X is within the plate's plane, Z going out
+    // of the plate towards the body. The center of the body lies at the
+    // intersection of both tilt and pan rotation axis.
+
+    // Transformation from the center of the pan plate to the center of the body.
+    Eigen::Vector3d pan_plate2center(0, 0, 0.2);
+    // Transformation from the center of the body to the center of the tilt plate
+    Eigen::Vector3d center2tilt_plate(0, 0.4, 0);
+    // Rotation to align the tilt frame properly. X is along the zero
+    // measurement, Z going out of the plate directed outside the PTU body
+    Eigen::AngleAxisd q_center2tilt_plate =
+        Eigen::AngleAxisd(-M_PI, Eigen::Vector3d::UnitX());
+
+    Eigen::Isometry3d pan_plate2tilt_plate;
+    pan_plate2tilt_plate.translate(pan_plate2center);
+    pan_plate2tilt_plate.translate(center2tilt_plate);
+    pan_plate2tilt_plate.rotate(q_center2tilt_plate);
+    this->pan_plate2tilt_plate = pan_plate2tilt_plate;
 }
 
 
@@ -100,13 +119,15 @@ void Task::writeJoints(base::Time const& time, float pan, float tilt)
     _joints_samples.write(m_sample);
     
     base::samples::RigidBodyState ptu_sample;
-    ptu_sample.orientation =
-       Eigen::AngleAxisd(pan, Eigen::Vector3d::UnitZ()) *
-       Eigen::AngleAxisd(tilt, Eigen::Vector3d::UnitY());
-    ptu_sample.sourceFrame = _moving_frame.get();
-    ptu_sample.targetFrame = _base_frame.get();
+    Eigen::Isometry3d transform(pan_plate2tilt_plate);
+    transform.prerotate( Eigen::AngleAxisd(pan, Eigen::Vector3d::UnitY()) );
+    transform.rotate( Eigen::AngleAxisd(tilt, Eigen::Vector3d::UnitZ()) );
+    ptu_sample.sourceFrame = _pan_plate_frame.get();
+    ptu_sample.targetFrame = _tilt_plate_frame.get();
     ptu_sample.time = time;
-    _orientation_samples.write(ptu_sample);
+    ptu_sample.orientation = transform.rotation();
+    ptu_sample.position = transform.translation();
+    _transformation_samples.write(ptu_sample);
 }
 
 bool Task::startHook()
