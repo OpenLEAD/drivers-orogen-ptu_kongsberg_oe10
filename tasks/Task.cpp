@@ -59,11 +59,11 @@ void Task::init()
     m_limits.resize(2);
     m_limits.names[0] = "pan";
     m_limits[0].min.position = 0;
-    m_limits[0].max.position = 270 * M_PI / 180;
+    m_limits[0].max.position = 360 * M_PI / 180;
     m_limits[0].max.speed = 0;
     m_limits.names[1] = "tilt";
     m_limits[1].min.position = 0;
-    m_limits[1].max.position = 270 * M_PI / 180;
+    m_limits[1].max.position = 360 * M_PI / 180;
     m_limits[1].max.speed = 0;
     _limits.set(m_limits);
 
