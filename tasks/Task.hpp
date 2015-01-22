@@ -11,6 +11,8 @@
 
 namespace ptu_kongsberg_oe10 {
 
+    struct PanTiltStatus;
+
     /*! \class Task 
      * \brief The task context provides and requires services. It uses an ExecutionEngine to perform its functions.
      * Essential interfaces are operations, data flow ports and properties. These interfaces have been defined using the oroGen specification.
@@ -43,6 +45,9 @@ namespace ptu_kongsberg_oe10 {
         virtual void useEndStops(bool enable);
 
         Eigen::Isometry3d pan_plate2tilt_plate;
+
+        bool m_junk_angle_filter;
+        bool filterJunkAngles(PanTiltStatus const& status) const;
 
         Driver* m_driver;
         base::JointLimits m_limits;

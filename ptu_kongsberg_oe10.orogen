@@ -22,6 +22,10 @@ task_context "Task" do
     property 'device_id', 'int'
     property 'limits', 'base/JointLimits'
 
+    # The PTU has a bug in which it reports angles of 0 and sometimes 1.5 when
+    # moving. This enables an attempt to filter out these angles
+    property 'junk_angle_filter', '/bool', true
+
     # Whether the PTU should have end stops enabled when starting
     # It can be changed later by calling the useEndStops operation
     property 'use_end_stops', 'bool', false

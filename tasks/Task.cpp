@@ -135,6 +135,8 @@ bool Task::startHook()
     if (! TaskBase::startHook())
         return false;
 
+    m_junk_angle_filter = _junk_angle_filter.get();
+
     // Initialize the current command to the current value
     PanTiltStatus status = m_driver->getPanTiltStatus(_device_id.get());
     writeJoints(base::Time::now(), status.pan, status.tilt);
@@ -147,10 +149,25 @@ void Task::updateHook()
 {
     TaskBase::updateHook();
 }
+
+bool Task::filterJunkAngles(PanTiltStatus const& status) const
+{
+    double time_diff = (status.time - m_sample.time).toSeconds();
+    double max_pan  = status.pan_speed  * time_diff * 30 * M_PI / 180;
+    double max_tilt = status.tilt_speed * time_diff * 30 * M_PI / 180;
+    double pan_diff = fabs(status.pan - m_sample[0].position);
+        double tilt_diff = fabs(status.tilt - m_sample[1].position);
+    return (pan_diff <= max_pan) && (tilt_diff < max_tilt);
+}
+
 void Task::processIO()
 {
     PanTiltStatus status = m_driver->readPanTiltStatus(_device_id.get());
-    writeJoints(base::Time::now(), status.pan, status.tilt);
+    if (m_junk_angle_filter)
+    {
+        if (filterJunkAngles(status))
+            writeJoints(status.time, status.pan, status.tilt);
+    }
 
     if (_joints_cmd.readNewest(m_cmd) == RTT::NewData)
     {
