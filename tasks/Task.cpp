@@ -122,8 +122,8 @@ void Task::writeJoints(base::Time const& time, float pan, float tilt)
     Eigen::Isometry3d transform(pan_plate2tilt_plate);
     transform.prerotate( Eigen::AngleAxisd(pan, Eigen::Vector3d::UnitZ()) );
     transform.rotate( Eigen::AngleAxisd(tilt, Eigen::Vector3d::UnitZ()) );
-    ptu_sample.sourceFrame = _pan_plate_frame.get();
-    ptu_sample.targetFrame = _tilt_plate_frame.get();
+    ptu_sample.sourceFrame = _tilt_plate_frame.get();
+    ptu_sample.targetFrame = _pan_plate_frame.get();
     ptu_sample.time = time;
     ptu_sample.orientation = transform.rotation();
     ptu_sample.position = transform.translation();
