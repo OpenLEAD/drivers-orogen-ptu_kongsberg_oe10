@@ -161,6 +161,12 @@ bool Task::startHook()
 
     m_junk_angle_filter = _junk_angle_filter.get();
 
+    // clear old messages
+    // if nothing is in the buffer after the stopHook was called
+    // rtt is complaining about a timeout
+    if(m_driver->isPanTiltStatusRequested(_device_id.get()))
+        m_driver->readPanTiltStatus(_device_id.get());
+
     // Initialize the current command to the current value
     PanTiltStatus status = m_driver->getPanTiltStatus(_device_id.get());
     writeJoints(base::Time::now(), status.pan, status.tilt);
@@ -208,6 +214,13 @@ void Task::errorHook()
 }
 void Task::stopHook()
 {
+    // stop the device
+    m_driver->tiltStop(_device_id.get());
+    m_driver->panStop(_device_id.get());
+
+    // do not clear the requestPanTiltStatus here
+    // because this leads to a rtt timeout
+
     TaskBase::stopHook();
 }
 void Task::cleanupHook()
