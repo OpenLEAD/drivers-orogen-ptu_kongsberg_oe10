@@ -201,11 +201,13 @@ bool Task::filterJunkAngles(PanTiltStatus const& status) const
 void Task::processIO()
 {
     PanTiltStatus status = m_driver->readPanTiltStatus(_device_id.get());
-    if (m_junk_angle_filter)
+    if(m_junk_angle_filter)
     {
         if (filterJunkAngles(status))
             writeJoints(status.time, status.pan, status.tilt);
     }
+    else
+        writeJoints(status.time, status.pan, status.tilt);
 
     if (_joints_cmd.readNewest(m_cmd) == RTT::NewData)
     {
