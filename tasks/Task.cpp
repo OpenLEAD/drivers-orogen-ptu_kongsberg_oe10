@@ -5,6 +5,14 @@
 
 using namespace ptu_kongsberg_oe10;
 
+// calcualtes the ptu angle
+double toPTUAngle(double rad)
+{
+    rad = base::Angle::normalizeRad(rad);
+    if(rad < 0)
+        rad += 2.0*M_PI;
+    return rad;
+}
 Task::Task(std::string const& name)
     : TaskBase(name),m_driver(NULL)
 {
@@ -202,9 +210,15 @@ void Task::processIO()
     if (_joints_cmd.readNewest(m_cmd) == RTT::NewData)
     {
         if (m_cmd[0].hasPosition())
-            m_driver->setPanPosition(_device_id.get(), m_cmd[0].position);
+        {
+            float pan = toPTUAngle(m_cmd[0].position);
+            m_driver->setPanPosition(_device_id.get(),pan);
+        }
         if (m_cmd[1].hasPosition())
-            m_driver->setTiltPosition(_device_id.get(), m_cmd[1].position);
+        {
+            float tilt = toPTUAngle(m_cmd[1].position);
+            m_driver->setTiltPosition(_device_id.get(), tilt);
+        }
     }
     m_driver->requestPanTiltStatus(_device_id.get());
 }
