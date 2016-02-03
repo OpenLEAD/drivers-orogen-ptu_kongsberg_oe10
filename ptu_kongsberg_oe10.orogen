@@ -32,6 +32,12 @@ task_context "Task" do
     property 'device_id', 'int'
     property 'limits', 'base/JointLimits'
 
+    # Speed used for pan [0..1]
+    property 'pan_speed','float', 0.5
+
+    # Speed used for tilt[0..1]
+    property 'tilt_speed','float', 0.5
+
     # The PTU has a bug in which it reports angles of 0 and sometimes 1.5 when
     # moving. This enables an attempt to filter out these angles
     property 'junk_angle_filter', '/bool', true

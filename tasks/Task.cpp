@@ -130,6 +130,8 @@ bool Task::configureHook()
     Status status = m_driver->getStatus(_device_id.get());
     writeJoints(base::Time::now(), status.pan, status.tilt);
     m_driver->useEndStops(_device_id.get(), _use_end_stops.get());
+    m_driver->setTiltSpeed(_device_id.get(),_tilt_speed.get());
+    m_driver->setPanSpeed(_device_id.get(),_pan_speed.get());
     return true;
 }
 
