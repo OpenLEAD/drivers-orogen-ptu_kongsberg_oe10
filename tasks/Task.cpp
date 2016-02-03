@@ -21,6 +21,13 @@ Task::~Task()
 {
 }
 
+::ptu_kongsberg_oe10::Status Task::getStatus()
+{
+    if(!m_driver)
+        throw std::runtime_error("setEndStop: device not configured");
+    return m_driver->getStatus(_device_id.get());
+}
+
 void Task::setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode)
 {
     if(!m_driver)
@@ -42,6 +49,19 @@ void Task::setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode)
  	break;
     }
 }
+
+void Task::panStop()
+{
+    if(!m_driver)
+        throw std::runtime_error("panStop: device not configured");
+    m_driver->panStop(_device_id.get());
+}
+
+void Task::tiltStop()
+{
+    if(!m_driver)
+        throw std::runtime_error("tiltStop: device not configured");
+    m_driver->tiltStop(_device_id.get());
 }
 
 void Task::useEndStops(bool enable)

@@ -36,6 +36,17 @@ namespace ptu_kongsberg_oe10 {
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     protected:
+
+        virtual ::ptu_kongsberg_oe10::Status getStatus();
+
+        /* stops pan movement until a new command is sent
+         */
+        virtual void panStop();
+
+        /* stops tilt movement until a new command is sent
+         */
+        virtual void tiltStop();
+
         /* 
          */
         virtual void setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode);
