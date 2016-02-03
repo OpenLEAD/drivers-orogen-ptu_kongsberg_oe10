@@ -211,6 +211,8 @@ void Task::processIO()
 
     if (_joints_cmd.readNewest(m_cmd) == RTT::NewData)
     {
+        if(m_cmd.size() != 2)
+            throw std::runtime_error("processIO: exactly 2 joint elements are requested (0= pan; 1=tilt");
         if (m_cmd[0].hasPosition())
         {
             float pan = toPTUAngle(m_cmd[0].position);
