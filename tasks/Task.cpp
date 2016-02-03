@@ -6,13 +6,13 @@
 using namespace ptu_kongsberg_oe10;
 
 Task::Task(std::string const& name)
-    : TaskBase(name)
+    : TaskBase(name),m_driver(NULL)
 {
     init();
 }
 
 Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
-    : TaskBase(name, engine)
+    : TaskBase(name, engine),m_driver(NULL)
 {
     init();
 }
@@ -46,6 +46,8 @@ void Task::setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode)
 
 void Task::useEndStops(bool enable)
 {
+    if(!m_driver)
+        throw std::runtime_error("useEndStops: device not configured");
     m_driver->useEndStops(_device_id.get(), enable);
 }
 
@@ -190,5 +192,6 @@ void Task::cleanupHook()
 {
     TaskBase::cleanupHook();
     delete m_driver;
+    m_driver = NULL;
 }
 
