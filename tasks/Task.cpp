@@ -23,7 +23,9 @@ Task::~Task()
 
 void Task::setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode)
 {
-    m_driver->readPanTiltStatus(_device_id.get());
+    if(!m_driver)
+        throw std::runtime_error("setEndStop: device not configured");
+
     switch(mode)
     {
     case PAN_POSITIVE:
@@ -39,14 +41,12 @@ void Task::setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode)
         m_driver->setTiltNegativeEndStop(_device_id.get());
  	break;
     }
-    m_driver->requestPanTiltStatus(_device_id.get());
+}
 }
 
 void Task::useEndStops(bool enable)
 {
-    m_driver->readPanTiltStatus(_device_id.get());
     m_driver->useEndStops(_device_id.get(), enable);
-    m_driver->requestPanTiltStatus(_device_id.get());
 }
 
 void Task::init()
