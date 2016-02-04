@@ -213,12 +213,34 @@ void Task::processIO()
     {
         if(m_cmd.size() != 2)
             throw std::runtime_error("processIO: exactly 2 joint elements are requested (0= pan; 1=tilt");
-        if (m_cmd[0].hasPosition())
+
+        // set speed
+        float pan_speed = _pan_speed.get();
+        float tilt_speed = _tilt_speed.get();
+        if(m_cmd[0].hasSpeed())
+            pan_speed = m_cmd[0].speed;
+        if(m_cmd[1].hasSpeed())
+            tilt_speed = m_cmd[1].speed;
+        if(pan_speed != status.pan_speed)
+            m_driver->setPanSpeed(_device_id.get(),pan_speed);
+        if(tilt_speed != status.tilt_speed)
+            m_driver->setTiltSpeed(_device_id.get(),tilt_speed);
+
+        // force stop if speed is zero
+        if(pan_speed == 0)
+            m_driver->panStop(_device_id.get());
+        if(tilt_speed == 0)
+            m_driver->tiltStop(_device_id.get());
+
+        // set new position 
+        // do not set if speed is zero because the ptu just
+        // does not care about zero speed
+        if(m_cmd[0].hasPosition() && pan_speed > 0)
         {
             float pan = toPTUAngle(m_cmd[0].position);
             m_driver->setPanPosition(_device_id.get(),pan);
         }
-        if (m_cmd[1].hasPosition())
+        if(m_cmd[1].hasPosition() && tilt_speed > 0)
         {
             float tilt = toPTUAngle(m_cmd[1].position);
             m_driver->setTiltPosition(_device_id.get(), tilt);
@@ -226,10 +248,12 @@ void Task::processIO()
     }
     m_driver->requestPanTiltStatus(_device_id.get());
 }
+
 void Task::errorHook()
 {
     TaskBase::errorHook();
 }
+
 void Task::stopHook()
 {
     // stop the device
@@ -241,6 +265,7 @@ void Task::stopHook()
 
     TaskBase::stopHook();
 }
+
 void Task::cleanupHook()
 {
     TaskBase::cleanupHook();
