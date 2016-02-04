@@ -195,7 +195,8 @@ bool Task::filterJunkAngles(PanTiltStatus const& status) const
     double max_tilt = time_diff * 30 * M_PI / 180;
     double pan_diff = fabs(status.pan - m_sample[0].position);
     double tilt_diff = fabs(status.tilt - m_sample[1].position);
-    return (pan_diff <= max_pan) && (tilt_diff < max_tilt);
+    return (pan_diff <= max_pan  || fabs(pan_diff-2.0*M_PI) <= max_pan) &&
+           (tilt_diff < max_tilt || fabs(tilt_diff-2.0*M_PI) <= max_tilt);
 }
 
 void Task::processIO()
