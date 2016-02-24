@@ -5,14 +5,22 @@
 
 using namespace ptu_kongsberg_oe10;
 
+// calcualtes the ptu angle
+double toPTUAngle(double rad)
+{
+    rad = base::Angle::normalizeRad(rad);
+    if(rad < 0)
+        rad += 2.0*M_PI;
+    return rad;
+}
 Task::Task(std::string const& name)
-    : TaskBase(name)
+    : TaskBase(name),m_driver(NULL)
 {
     init();
 }
 
 Task::Task(std::string const& name, RTT::ExecutionEngine* engine)
-    : TaskBase(name, engine)
+    : TaskBase(name, engine),m_driver(NULL)
 {
     init();
 }
@@ -21,9 +29,18 @@ Task::~Task()
 {
 }
 
+::ptu_kongsberg_oe10::Status Task::getStatus()
+{
+    if(!m_driver)
+        throw std::runtime_error("setEndStop: device not configured");
+    return m_driver->getStatus(_device_id.get());
+}
+
 void Task::setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode)
 {
-    m_driver->readPanTiltStatus(_device_id.get());
+    if(!m_driver)
+        throw std::runtime_error("setEndStop: device not configured");
+
     switch(mode)
     {
     case PAN_POSITIVE:
@@ -39,14 +56,27 @@ void Task::setEndStop(::ptu_kongsberg_oe10::END_STOPS const & mode)
         m_driver->setTiltNegativeEndStop(_device_id.get());
  	break;
     }
-    m_driver->requestPanTiltStatus(_device_id.get());
+}
+
+void Task::panStop()
+{
+    if(!m_driver)
+        throw std::runtime_error("panStop: device not configured");
+    m_driver->panStop(_device_id.get());
+}
+
+void Task::tiltStop()
+{
+    if(!m_driver)
+        throw std::runtime_error("tiltStop: device not configured");
+    m_driver->tiltStop(_device_id.get());
 }
 
 void Task::useEndStops(bool enable)
 {
-    m_driver->readPanTiltStatus(_device_id.get());
+    if(!m_driver)
+        throw std::runtime_error("useEndStops: device not configured");
     m_driver->useEndStops(_device_id.get(), enable);
-    m_driver->requestPanTiltStatus(_device_id.get());
 }
 
 void Task::init()
@@ -108,6 +138,8 @@ bool Task::configureHook()
     Status status = m_driver->getStatus(_device_id.get());
     writeJoints(base::Time::now(), status.pan, status.tilt);
     m_driver->useEndStops(_device_id.get(), _use_end_stops.get());
+    m_driver->setTiltSpeed(_device_id.get(),_tilt_speed.get());
+    m_driver->setPanSpeed(_device_id.get(),_pan_speed.get());
     return true;
 }
 
@@ -137,6 +169,12 @@ bool Task::startHook()
 
     m_junk_angle_filter = _junk_angle_filter.get();
 
+    // clear old messages
+    // if nothing is in the buffer after the stopHook was called
+    // rtt is complaining about a timeout
+    if(m_driver->isPanTiltStatusRequested(_device_id.get()))
+        m_driver->readPanTiltStatus(_device_id.get());
+
     // Initialize the current command to the current value
     PanTiltStatus status = m_driver->getPanTiltStatus(_device_id.get());
     writeJoints(base::Time::now(), status.pan, status.tilt);
@@ -153,42 +191,86 @@ void Task::updateHook()
 bool Task::filterJunkAngles(PanTiltStatus const& status) const
 {
     double time_diff = (status.time - m_sample.time).toSeconds();
-    double max_pan  = status.pan_speed  * time_diff * 30 * M_PI / 180;
-    double max_tilt = status.tilt_speed * time_diff * 30 * M_PI / 180;
+    double max_pan  = time_diff * 30 * M_PI / 180;
+    double max_tilt = time_diff * 30 * M_PI / 180;
     double pan_diff = fabs(status.pan - m_sample[0].position);
-        double tilt_diff = fabs(status.tilt - m_sample[1].position);
-    return (pan_diff <= max_pan) && (tilt_diff < max_tilt);
+    double tilt_diff = fabs(status.tilt - m_sample[1].position);
+    return (pan_diff <= max_pan  || fabs(pan_diff-2.0*M_PI) <= max_pan) &&
+           (tilt_diff < max_tilt || fabs(tilt_diff-2.0*M_PI) <= max_tilt);
 }
 
 void Task::processIO()
 {
     PanTiltStatus status = m_driver->readPanTiltStatus(_device_id.get());
-    if (m_junk_angle_filter)
+    if(m_junk_angle_filter)
     {
         if (filterJunkAngles(status))
             writeJoints(status.time, status.pan, status.tilt);
     }
+    else
+        writeJoints(status.time, status.pan, status.tilt);
 
     if (_joints_cmd.readNewest(m_cmd) == RTT::NewData)
     {
-        if (m_cmd[0].hasPosition())
-            m_driver->setPanPosition(_device_id.get(), m_cmd[0].position);
-        if (m_cmd[1].hasPosition())
-            m_driver->setTiltPosition(_device_id.get(), m_cmd[1].position);
+        if(m_cmd.size() != 2)
+            throw std::runtime_error("processIO: exactly 2 joint elements are requested (0= pan; 1=tilt");
+
+        // set speed
+        float pan_speed = _pan_speed.get();
+        float tilt_speed = _tilt_speed.get();
+        if(m_cmd[0].hasSpeed())
+            pan_speed = m_cmd[0].speed;
+        if(m_cmd[1].hasSpeed())
+            tilt_speed = m_cmd[1].speed;
+        if(pan_speed != status.pan_speed)
+            m_driver->setPanSpeed(_device_id.get(),pan_speed);
+        if(tilt_speed != status.tilt_speed)
+            m_driver->setTiltSpeed(_device_id.get(),tilt_speed);
+
+        // force stop if speed is zero
+        if(pan_speed == 0)
+            m_driver->panStop(_device_id.get());
+        if(tilt_speed == 0)
+            m_driver->tiltStop(_device_id.get());
+
+        // set new position 
+        // do not set if speed is zero because the ptu just
+        // does not care about zero speed
+        if(m_cmd[0].hasPosition() && pan_speed > 0)
+        {
+            float pan = toPTUAngle(m_cmd[0].position);
+            m_driver->setPanPosition(_device_id.get(),pan);
+        }
+        if(m_cmd[1].hasPosition() && tilt_speed > 0)
+        {
+            float tilt = toPTUAngle(m_cmd[1].position);
+            m_driver->setTiltPosition(_device_id.get(), tilt);
+        }
     }
     m_driver->requestPanTiltStatus(_device_id.get());
 }
+
 void Task::errorHook()
 {
     TaskBase::errorHook();
 }
+
 void Task::stopHook()
 {
+    // stop the device
+    m_driver->tiltStop(_device_id.get());
+    m_driver->panStop(_device_id.get());
+
+    // do not clear the requestPanTiltStatus here
+    // because this leads to a rtt timeout
+
     TaskBase::stopHook();
 }
+
 void Task::cleanupHook()
 {
     TaskBase::cleanupHook();
     delete m_driver;
+    m_driver = NULL;
 }
 
